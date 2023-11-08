@@ -31,6 +31,7 @@ async function run() {
 
         //collection
         const productCollection = client.db('clothingSwap').collection('services');
+        const clothDB = client.db('clothingSwap').collection('booked');
 
         app.post('/services', async (req, res) => {
             const food = req.body;
