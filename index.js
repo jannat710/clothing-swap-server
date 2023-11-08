@@ -44,6 +44,7 @@ async function run() {
             const result = await productCollection.find().toArray();
             res.send(result);
         })
+        //load single services
 
 
         await client.db("admin").command({ ping: 1 });
