@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 var jwt = require('jsonwebtoken');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 //port
 const port = process.env.PORT || 5000;
@@ -60,11 +60,26 @@ async function run() {
         }
 
         //services data load
-        app.get('/services',verifyToken, async (req, res) => {
+        app.get('/services', async (req, res) => {
             console.log(req.headers);
             const result = await serviceCollection.find().toArray();
             res.send(result);
         })
+
+            // load single service data
+    app.get('/services/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) }
+
+        const options = {
+            projection: { serviceArea: 1, serviceProviderImage: 1 },
+        };
+
+        const result = await serviceCollection.findOne(query, options);
+        res.send(result);
+    })
+
+
         //testimonials data load
         app.get('/testimonials', async (req, res) => {
             const result = await testimonialsCollection.find().toArray();
