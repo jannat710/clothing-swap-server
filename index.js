@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+var jwt = require('jsonwebtoken');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
@@ -33,7 +34,37 @@ async function run() {
         const productCollection = client.db('clothingSwap').collection('services');
         const userCollection = client.db('clothingSwap').collection('users');
         const testimonialsCollection = client.db('clothingSwap').collection('testimonials');
+        const serviceCollection = client.db('clothingSwap').collection('services');
 
+
+        //jwt
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '3h' });
+            res.send({ token });
+        })
+        //middleware
+        const verifyToken = (req, res, next) => {
+            console.log('inside verify token', req.headers.authorization);
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: 'unauthorized access' });
+            }
+            const token = req.headers.authorization.split(' ')[1];
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+                if (err) {
+                    return res.status(401).send({ message: 'unauthorized access' })
+                }
+                req.decoded = decoded;
+                next();
+            })
+        }
+
+        //services data load
+        app.get('/services',verifyToken, async (req, res) => {
+            console.log(req.headers);
+            const result = await serviceCollection.find().toArray();
+            res.send(result);
+        })
         //testimonials data load
         app.get('/testimonials', async (req, res) => {
             const result = await testimonialsCollection.find().toArray();
