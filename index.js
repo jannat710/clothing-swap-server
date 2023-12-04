@@ -31,7 +31,34 @@ async function run() {
 
         //collection
         const productCollection = client.db('clothingSwap').collection('services');
-        const clothDB = client.db('clothingSwap').collection('booked');
+        const userCollection = client.db('clothingSwap').collection('users');
+        const testimonialsCollection = client.db('clothingSwap').collection('testimonials');
+
+        //testimonials data load
+        app.get('/testimonials', async (req, res) => {
+            const result = await testimonialsCollection.find().toArray();
+            res.send(result);
+        })
+
+        //user related API
+        app.get('/users', async (req, res) => {
+
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        });
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email }
+            const existingUser = await userCollection.findOne(query);
+            if (existingUser) {
+                return res.send({ message: 'user already exists', insertedId: null })
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
+
+
+
 
         app.post('/services', async (req, res) => {
             const food = req.body;
